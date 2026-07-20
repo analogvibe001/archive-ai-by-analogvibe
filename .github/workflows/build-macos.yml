@@ -17,8 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Instalar Rust
+      - name: Instalar Rust (targets Intel + Apple Silicon)
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - name: Cache de cargo
         uses: actions/cache@v4
@@ -39,18 +41,40 @@ jobs:
       - name: Instalar tauri-cli
         run: cargo install tauri-cli --version "^2.0.0" --locked
 
-      - name: Compilar la app
+      # Binario universal: corre nativo tanto en Macs Intel como Apple Silicon
+      - name: Compilar la app (universal)
         working-directory: src-tauri
-        run: cargo tauri build
+        run: cargo tauri build --target universal-apple-darwin
 
       - name: Subir artefactos
         uses: actions/upload-artifact@v4
         with:
           name: Archive-AI-macOS
           path: |
-            src-tauri/target/release/bundle/macos/*.app
-            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app
+            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           if-no-files-found: error
+
+      # Release público con link fijo para compartir la app
+      - name: Publicar Release de GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Archive AI — última versión
+          body: |
+            **Instalación en cualquier Mac (Intel o Apple Silicon, macOS 11+):**
+
+            1. Descarga el `.dmg` de abajo y ábrelo
+            2. Arrastra **Archive AI** a la carpeta **Aplicaciones**
+            3. Como la app aún no está notarizada por Apple, la primera vez macOS dirá que está "dañada". No lo está — es el aviso estándar para apps sin firma de Apple. Pega esto en Terminal y listo:
+
+            ```
+            xattr -cr /Applications/"Archive AI.app"
+            ```
+
+            Esto solo hace falta una vez por instalación.
+          files: |
+            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
 
       # Publica el .app zipeado en la rama "release-bin" del propio repo.
       # Esto permite descargarlo por git (sin pasar por un navegador), lo que
@@ -58,7 +82,7 @@ jobs:
       - name: Publicar app en rama release-bin
         run: |
           ditto -c -k --sequesterRsrc --keepParent \
-            "src-tauri/target/release/bundle/macos/Archive AI.app" \
+            "src-tauri/target/universal-apple-darwin/release/bundle/macos/Archive AI.app" \
             /tmp/ArchiveAI-macos.zip
           mkdir /tmp/relbranch && cd /tmp/relbranch
           cp /tmp/ArchiveAI-macos.zip .
