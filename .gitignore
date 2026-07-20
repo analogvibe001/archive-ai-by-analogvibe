@@ -1,0 +1,5 @@
+src-tauri/target/
+src-tauri/core-logic/target/
+Cargo.lock
+.DS_Store
+node_modules/

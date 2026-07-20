@@ -1,0 +1,24 @@
+{
+  "id": "animaciones",
+  "name": "Animaciones",
+  "description": "Proyectos de animación y motion graphics por marca",
+  "signals": {
+    "keywords": ["animacion", "animación", "anim", "motion", "after effects", "ae", "moho", "lottie", "2d", "3d", "blender", "cinema4d", "c4d", "motion graphics", "mg"],
+    "filePatterns": ["*.aep", "*.aet", "*.mogrt", "*.moho", "*.blend", "*.c4d", "*.prproj"],
+    "minDesignRatio": 0.3
+  },
+  "structure": {
+    "root": "{type} - {year} - {brand}",
+    "level1": "{month_name} - {type} - {year} - {brand}",
+    "level2": "{project_name} - {month_name} - {type} - {year} - {brand}",
+    "level3_assets": "Assets - {project_name} - {month_name} - {type} - {year} - {brand}",
+    "level3_exports": "Exports - {project_name} - {month_name} - {type} - {year} - {brand}",
+    "level3_editable": "Editable - {project_name} - {month_name} - {type} - {year} - {brand}"
+  },
+  "fileRouting": {
+    "assets": ["png","jpg","jpeg","svg","ai","psd","eps","webp","mp3","wav","aiff","ttf","otf","woff"],
+    "exports": ["mp4","mov","gif","webm","avi","mkv"],
+    "editable": ["aep","aet","mogrt","moho","blend","c4d","prproj","psd","ai","indd","sketch","fig","afdesign"]
+  },
+  "notes": "Para proyectos de motion graphics y animación 2D/3D"
+}

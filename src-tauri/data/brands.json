@@ -1,0 +1,85 @@
+{
+  "known": [
+    {
+      "id": "toyota",
+      "name": "Toyota",
+      "aliases": [
+        "toyota",
+        "toyo",
+        "toy"
+      ],
+      "color": "#EB0A1E"
+    },
+    {
+      "id": "primax",
+      "name": "Primax",
+      "aliases": [
+        "primax",
+        "prima",
+        "prx"
+      ],
+      "color": "#FF6B00"
+    },
+    {
+      "id": "listo",
+      "name": "LiSTO!",
+      "aliases": [
+        "listo",
+        "listo!",
+        "li$to",
+        "li5to",
+        "lsto"
+      ],
+      "color": "#00C851"
+    },
+    {
+      "id": "paseo",
+      "name": "Paseo",
+      "aliases": [
+        "paseo",
+        "el paseo",
+        "elpaseo",
+        "paseo shopping"
+      ],
+      "color": "#8B5CF6"
+    },
+    {
+      "id": "riocentro",
+      "name": "Riocentro",
+      "aliases": [
+        "riocentro",
+        "rio centro",
+        "rio",
+        "rioct"
+      ],
+      "color": "#3B82F6"
+    },
+    {
+      "id": "plaza",
+      "name": "Plaza",
+      "aliases": [
+        "plaza",
+        "riocentro plaza",
+        "plaza shopping"
+      ],
+      "color": "#EC4899"
+    },
+    {
+      "id": "leat",
+      "name": "Leat",
+      "aliases": [
+        "leat"
+      ],
+      "color": "#F59E0B"
+    },
+    {
+      "id": "totem",
+      "name": "Totem",
+      "aliases": [
+        "totem",
+        "tótem"
+      ],
+      "color": "#06B6D4"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "producciones",
+  "name": "Producciones",
+  "description": "Producciones audiovisuales por marca, año y fecha",
+  "signals": {
+    "keywords": ["produccion", "producción", "prod", "shooting", "shoot", "rodaje", "grabacion", "grabación", "sesion", "sesión", "fotos", "videos", "reel", "contenido", "content"],
+    "filePatterns": ["*.arw", "*.cr2", "*.dng", "*.raw", "*.nef", "*.jpg", "*.mp4", "*.mov", "*.braw"],
+    "minPhotoRatio": 0.2
+  },
+  "structure": {
+    "root": "{type} - {year} - {brand}",
+    "level1": "{month_name} - {type} - {year} - {brand}",
+    "level2": "{day} - {month_name} - {type} - {year} - {brand}",
+    "level3_photo": "Fotos - {day} - {month_name} - {type} - {year} - {brand}",
+    "level3_video": "Videos - {day} - {month_name} - {type} - {year} - {brand}",
+    "level4_photo_raw": "Fotos RAW - Fotos - {day} - {month_name} - {type} - {year} - {brand}",
+    "level4_photo_edit": "Fotos Editadas - Fotos - {day} - {month_name} - {type} - {year} - {brand}",
+    "level4_video_raw": "Videos RAW - Videos - {day} - {month_name} - {type} - {year} - {brand}",
+    "level4_video_edit": "Videos Editados - Videos - {day} - {month_name} - {type} - {year} - {brand}"
+  },
+  "fileRouting": {
+    "raw_photo": ["arw","cr2","dng","raw","nef","orf","rw2"],
+    "edited_photo": ["jpg","jpeg","png","tiff","tif","webp","heic","psd"],
+    "raw_video": ["braw","r3d","mxf","mp4","mov","avi","mkv","m4v"],
+    "edited_video": ["mp4_edit","mov_edit","prproj","aep","ppj"]
+  },
+  "notes": "Estructura principal para producciones fotográficas y de video por marca"
+}

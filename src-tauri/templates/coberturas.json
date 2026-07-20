@@ -1,0 +1,22 @@
+{
+  "id": "coberturas",
+  "name": "Coberturas",
+  "description": "Coberturas de eventos por marca, año y fecha",
+  "signals": {
+    "keywords": ["cobertura", "evento", "event", "covert", "bts", "behind", "live", "directo", "apertura", "inauguracion", "lanzamiento", "launch", "premiere", "conferencia", "congress"],
+    "filePatterns": ["*.jpg", "*.mp4", "*.mov", "*.heic"],
+    "minPhotoRatio": 0.4
+  },
+  "structure": {
+    "root": "{type} - {year} - {brand}",
+    "level1": "{month_name} - {type} - {year} - {brand}",
+    "level2": "{day} - {month_name} - {type} - {year} - {brand}",
+    "level3_photo": "Fotos - {day} - {month_name} - {type} - {year} - {brand}",
+    "level3_video": "Videos - {day} - {month_name} - {type} - {year} - {brand}"
+  },
+  "fileRouting": {
+    "photo": ["jpg","jpeg","png","heic","webp","tiff","arw","cr2","dng","raw","nef"],
+    "video": ["mp4","mov","mxf","avi","mkv","m4v","braw"]
+  },
+  "notes": "Coberturas de eventos y activaciones de marca"
+}

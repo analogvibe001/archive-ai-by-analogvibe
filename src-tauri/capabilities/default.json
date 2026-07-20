@@ -1,0 +1,8 @@
+{
+  "identifier": "default",
+  "description": "Capabilities for the main Archive AI window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default"
+  ]
+}

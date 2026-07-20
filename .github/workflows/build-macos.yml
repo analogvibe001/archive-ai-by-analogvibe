@@ -1,0 +1,51 @@
+name: Build Archive AI (macOS)
+
+# Compila el .app y el .dmg en un runner macOS de GitHub cada vez que haces
+# push, o manualmente desde la pestaña Actions ("Run workflow").
+# El resultado queda como artefacto descargable en la página del run.
+
+on:
+  push:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache de cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: cargo-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.toml', 'src-tauri/core-logic/Cargo.toml') }}
+
+      # Paso rápido que aísla errores de la lógica pura antes del build completo
+      - name: Verificar lógica de negocio (cargo check + tests)
+        working-directory: src-tauri/core-logic
+        run: |
+          cargo check
+          cargo test
+
+      - name: Instalar tauri-cli
+        run: cargo install tauri-cli --version "^2.0.0" --locked
+
+      - name: Compilar la app
+        working-directory: src-tauri
+        run: cargo tauri build
+
+      - name: Subir artefactos
+        uses: actions/upload-artifact@v4
+        with:
+          name: Archive-AI-macOS
+          path: |
+            src-tauri/target/release/bundle/macos/*.app
+            src-tauri/target/release/bundle/dmg/*.dmg
+          if-no-files-found: error

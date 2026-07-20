@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Archive AI V2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#141418;--bg2:#1c1c23;--bg3:#242430;--bg4:#2e2e3d;--bg5:#383848;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--border3:rgba(255,255,255,0.18);
+  --t:#eeeef5;--t2:#9090aa;--t3:#5a5a78;
+  --accent:#6c5ce7;--accent2:#a29bfe;--asoft:rgba(108,92,231,0.12);--aglow:rgba(108,92,231,0.3);
+  --green:#00b894;--gsoft:rgba(0,184,148,0.1);--gtext:#00b894;
+  --amber:#fdcb6e;--amber2:rgba(253,203,110,0.12);
+  --red:#e17055;--rsoft:rgba(225,112,85,0.12);
+  --blue:#74b9ff;--bsoft:rgba(116,185,255,0.1);
+  --f:'DM Sans',-apple-system,sans-serif;--m:'DM Mono',monospace;
+  --r:10px;--rl:14px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--f);background:var(--bg);color:var(--t);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* ── LAYOUT ── */
+#app{display:grid;grid-template-rows:48px 1fr;height:100vh;overflow:hidden}
+
+/* ── TITLEBAR ── */
+.tbar{background:var(--bg2);border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px;padding-top:0;position:relative;-webkit-user-select:none}
+.tbar-left{display:flex;align-items:center;gap:10px}
+.tbar-logo{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.tbar-title{font-size:13px;font-weight:600;color:var(--t);letter-spacing:-.01em}
+.tbar-badge{font-size:10px;padding:2px 7px;background:var(--asoft);color:var(--accent2);border-radius:20px;font-weight:500}
+.tbar-path{font-size:11px;color:var(--t3);font-family:var(--m);max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbar-right{display:flex;gap:6px;align-items:center}
+.tbbtn{padding:4px 11px;border-radius:6px;border:0.5px solid var(--border2);background:var(--bg3);color:var(--t2);font-size:11px;cursor:pointer;font-family:var(--f);transition:all .15s;white-space:nowrap}
+.tbbtn:hover{background:var(--bg4);color:var(--t)}
+.tbbtn:disabled{opacity:.3;cursor:not-allowed}
+.tbbtn.danger{color:var(--red);border-color:rgba(225,112,85,0.3)}
+.tbbtn.danger:hover{background:var(--rsoft)}
+
+/* ── SCREENS ── */
+.screens{overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none}
+.screen.active{display:block}
+
+/* ── HOME ── */
+.home-wrap{max-width:560px;margin:0 auto;padding:52px 28px 80px}
+.home-hero{text-align:center;margin-bottom:44px}
+.home-logo{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 18px}
+.home-title{font-size:26px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+.home-sub{font-size:13px;color:var(--t2);line-height:1.65;max-width:380px;margin:0 auto}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--rl);padding:18px;margin-bottom:10px}
+.clabel{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.fsel{display:flex;align-items:center;gap:14px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r);padding:22px 18px;cursor:pointer;transition:all .2s;position:relative}
+.fsel:hover{border-color:var(--accent);background:var(--asoft)}
+.fsel.has{border-color:var(--accent);background:var(--asoft);border-style:solid}
+.fsel.dragover{border-color:var(--accent);background:var(--asoft);border-style:solid;transform:scale(1.01);box-shadow:0 0 0 3px var(--aglow)}
+.fsel-icon{font-size:28px;flex-shrink:0}
+.fsel-main{font-size:13px;font-weight:500}
+.fsel-sub{font-size:11px;color:var(--t2);margin-top:3px}
+.fsel-hint{font-size:10px;color:var(--t3);margin-top:5px;display:flex;align-items:center;gap:6px}
+.fsel-hint-sep{color:var(--border2)}
+.fsel-btn{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;background:var(--bg4);border:0.5px solid var(--border2);color:var(--t2);font-size:10px;cursor:pointer;font-family:var(--f);transition:all .15s}
+.fsel-btn:hover{background:var(--bg5);color:var(--t)}
+.fstats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.orgmode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.orgmode-opt{text-align:left;background:var(--bg3);border:0.5px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;font-family:var(--f);transition:all .15s}
+.orgmode-opt:hover{background:var(--bg4);border-color:var(--border2)}
+.orgmode-opt.active{background:var(--asoft);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.orgmode-opt-title{font-size:12px;font-weight:600}
+.orgmode-opt-sub{font-size:10px;color:var(--t2);margin-top:3px;line-height:1.4}
+.fsi{background:var(--bg3);border-radius:8px;padding:10px 12px;border:0.5px solid var(--border)}
+.fsi-val{font-size:16px;font-weight:600}
+.fsi-lbl{font-size:10px;color:var(--t3);margin-top:2px}
+
+.brands-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.brand-tag{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;background:var(--bg4);border:0.5px solid var(--border2);color:var(--t2)}
+.brand-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+.cta{width:100%;padding:14px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;font-family:var(--f);border:none;border-radius:var(--rl);cursor:pointer;transition:all .2s;letter-spacing:-.01em;margin-top:4px}
+.cta:hover{background:#7d6fee;transform:translateY(-1px);box-shadow:0 8px 24px var(--aglow)}
+.cta:disabled{background:var(--bg4);color:var(--t3);cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ── ANALYSIS ── */
+.awrap{max-width:520px;margin:0 auto;padding:60px 28px}
+.atitle{font-size:19px;font-weight:600;text-align:center;margin-bottom:4px}
+.asub{font-size:11px;color:var(--t2);text-align:center;font-family:var(--m);margin-bottom:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptrack{height:2px;background:var(--bg4);border-radius:1px;margin:6px 0 3px;overflow:hidden;position:relative}
+.pbar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease;width:0}
+.pshimmer{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);animation:sh 1.5s infinite}
+@keyframes sh{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.pmeta{display:flex;justify-content:space-between;font-size:11px;font-family:var(--m);margin-bottom:4px}
+.pstatus{color:var(--t2)}.ppct{color:var(--t3)}
+.steps{margin-top:32px;display:flex;flex-direction:column;gap:3px}
+.step{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:7px;transition:all .3s;opacity:.22}
+.step.act{opacity:1;background:var(--asoft)}
+.step.done{opacity:.5}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:all .3s}
+.step.act .sdot{background:var(--accent);box-shadow:0 0 0 3px var(--aglow)}
+.step.done .sdot{background:var(--green)}
+.slbl{font-size:12px;color:var(--t2)}.step.act .slbl{color:var(--t)}
+.scnt{margin-left:auto;font-size:10px;font-family:var(--m);color:var(--t3)}.step.done .scnt{color:var(--green)}
+
+/* ── DASHBOARD ── */
+.dash{display:flex;flex-direction:column;height:100%}
+.dash-hd{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14px 20px;flex-shrink:0}
+.dash-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.dash-title{font-size:16px;font-weight:600}
+.dash-acts{display:flex;gap:6px}
+.summary-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.sum-chip{}
+.sum-num{font-size:18px;font-weight:600}
+.sum-num.g{color:var(--green)}.sum-num.a{color:var(--amber)}.sum-num.r{color:var(--red)}.sum-num.b{color:var(--blue)}
+.sum-lbl{font-size:10px;color:var(--t3);margin-top:1px}
+.dash-body{flex:1;overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+.dash-panel{overflow-y:auto;padding:16px}
+.dash-panel:first-child{border-right:0.5px solid var(--border)}
+.panel-hd{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.phd-badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;text-transform:none;letter-spacing:0}
+.phd-before{background:var(--bg4);color:var(--t2)}.phd-after{background:var(--asoft);color:var(--accent2)}
+
+/* Source folders */
+.src-folder{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border-radius:8px;margin-bottom:4px;border:0.5px solid var(--border);background:var(--bg2);cursor:default;transition:all .15s}
+.src-folder:hover{border-color:var(--border2)}
+.src-folder.linked{border-color:rgba(108,92,231,0.3)}
+.sf-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.sf-name{font-size:12px;font-weight:500;font-family:var(--m);color:var(--t)}
+.sf-meta{font-size:10px;color:var(--t3);margin-top:2px}
+.sf-arrow{margin-left:auto;font-size:14px;color:var(--accent);flex-shrink:0;margin-top:2px}
+
+/* Proposal cards */
+.prop-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--rl);padding:13px 15px;margin-bottom:8px;transition:all .15s}
+.prop-card:hover{border-color:var(--border2)}
+.prop-card.accepted{border-color:rgba(0,184,148,0.35);background:rgba(0,184,148,0.04)}
+.prop-card.changed{border-color:rgba(116,185,255,0.35);background:rgba(116,185,255,0.04)}
+.prop-card.ignored{opacity:.45}
+.prop-card.needs-review{border-color:rgba(253,203,110,0.35)}
+.pc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.pc-left{}
+.pc-name{font-size:12px;font-weight:600;font-family:var(--m);margin-bottom:3px}
+.pc-template{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 7px;border-radius:4px;background:var(--bg4);color:var(--t2);margin-bottom:5px}
+.pc-path{font-size:10px;color:var(--t3);font-family:var(--m);line-height:1.5;word-break:break-all}
+.pc-path span{color:var(--accent2)}
+.conf-badge{flex-shrink:0;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;font-family:var(--m)}
+.ch{background:var(--gsoft);color:var(--green)}.cm{background:var(--amber2);color:var(--amber)}.cl{background:var(--rsoft);color:var(--red)}
+.pc-stats{display:flex;gap:10px;font-size:10px;color:var(--t3);margin-bottom:10px;font-family:var(--m)}
+.pc-stats span{display:flex;align-items:center;gap:3px}
+.cbar-wrap{height:2px;background:var(--bg4);border-radius:1px;margin-bottom:10px}
+.cbar{height:100%;border-radius:1px;transition:width .8s ease}
+.cbg{background:var(--green)}.cba{background:var(--amber)}.cbr{background:var(--red)}
+.pc-actions{display:flex;gap:5px;flex-wrap:wrap}
+.pc-btn{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--f);border:0.5px solid var(--border2);background:var(--bg3);color:var(--t2);transition:all .15s;white-space:nowrap}
+.pc-btn:hover{background:var(--bg4);color:var(--t)}
+.pc-btn.accept{border-color:rgba(0,184,148,.4);color:var(--green)}.pc-btn.accept:hover{background:var(--gsoft)}
+.pc-btn.active-accept{background:var(--gsoft);border-color:var(--green);color:var(--green)}
+.pc-btn.change{border-color:rgba(116,185,255,.4);color:var(--blue)}.pc-btn.change:hover{background:var(--bsoft)}
+.pc-btn.ignore{border-color:rgba(225,112,85,.3);color:var(--red)}.pc-btn.ignore:hover{background:var(--rsoft)}
+.pc-btn.active-ignore{background:var(--rsoft);border-color:var(--red);color:var(--red)}
+.review-banner{display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--amber2);border-radius:7px;font-size:11px;color:var(--amber);margin-bottom:8px}
+
+/* Action bar */
+.abar{border-top:0.5px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;background:var(--bg2);flex-shrink:0}
+.abar-info{font-size:11px;color:var(--t2);display:flex;gap:14px}
+.abar-info span{display:flex;align-items:center;gap:5px}
+.adot{width:5px;height:5px;border-radius:50%}
+.abar-btns{display:flex;gap:6px}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;font-family:var(--f);cursor:pointer;border:0.5px solid var(--border2);background:var(--bg3);color:var(--t);transition:all .15s}
+.btn:hover{background:var(--bg4)}
+.btn-acc{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-acc:hover{background:#7d6fee}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--t2)}
+.btn-ghost:hover{color:var(--t);background:var(--bg3)}
+.btn-danger{border-color:rgba(225,112,85,.35);color:var(--red)}
+.btn-danger:hover{background:var(--rsoft)}
+
+.log-entry{padding:6px 8px;border-radius:6px;line-height:1.5}
+.log-entry.info{color:var(--t2)}
+.log-entry.warn{color:var(--amber);background:var(--amber2)}
+.log-entry.error{color:var(--red);background:var(--rsoft)}
+.log-time{color:var(--t3);margin-right:6px}
+.log-cat{opacity:.7;margin-right:4px}
+.log-details{color:var(--t3);font-size:10px;margin-top:2px;padding-left:14px;white-space:pre-wrap;word-break:break-all}
+
+/* ── CONFIRM MODAL ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(8,8,12,.88);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.modal-ov.vis{display:flex}
+.modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:18px;padding:26px;max-width:400px;width:100%;margin:0 16px}
+.modal-icon{font-size:28px;margin-bottom:14px}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:7px}
+.modal-desc{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:18px}
+.modal-stats{background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:18px;display:flex;flex-direction:column;gap:6px}
+.mrow{display:flex;justify-content:space-between;font-size:11px;font-family:var(--m)}
+.mrl{color:var(--t2)}.mrv{color:var(--t);font-weight:500}
+.modal-btns{display:flex;gap:8px}
+
+/* ── SUCCESS ── */
+.swrap{max-width:440px;margin:0 auto;padding:60px 28px;text-align:center}
+.sicon{width:56px;height:56px;border-radius:50%;background:var(--gsoft);border:1px solid rgba(0,184,148,.2);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 20px;animation:pop .4s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.stitle{font-size:20px;font-weight:600;margin-bottom:7px}
+.ssub{font-size:13px;color:var(--t2);margin-bottom:28px}
+.undobtn{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:transparent;border:0.5px solid var(--border2);border-radius:var(--r);color:var(--t2);font-size:12px;cursor:pointer;font-family:var(--f);transition:all .15s;width:100%;margin-bottom:10px}
+.undobtn:hover{background:var(--bg3);color:var(--t)}
+
+/* ── NEW BRAND MODAL ── */
+.nb-modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:14px;padding:22px;max-width:360px;width:100%;margin:0 16px}
+.nb-input{width:100%;padding:9px 12px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:8px;color:var(--t);font-size:13px;font-family:var(--f);outline:none;margin:12px 0}
+.nb-input:focus{border-color:var(--accent)}
+
+/* ── BRAND MANAGEMENT ── */
+.brand-tag.clickable{cursor:pointer;transition:all .15s}
+.brand-tag.clickable:hover{background:var(--bg5);border-color:var(--border3)}
+.brand-add-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;background:transparent;border:1px dashed var(--border2);color:var(--t2);cursor:pointer;font-family:var(--f);transition:all .15s}
+.brand-add-btn:hover{border-color:var(--accent);color:var(--accent2);background:var(--asoft)}
+
+/* ── HIERARCHY MANAGEMENT ── */
+.orgmode-opt{position:relative}
+.hier-opt-icons{position:absolute;top:6px;right:6px;display:flex;gap:2px}
+.hier-opt-icon{font-size:10px;color:var(--t3);opacity:.65;padding:3px 5px;border-radius:5px;cursor:pointer;transition:all .15s}
+.hier-opt-icon:hover{opacity:1;background:var(--bg5);color:var(--t)}
+.hier-opt-icon.del:hover{color:var(--red);background:var(--rsoft)}
+.hier-add-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:transparent;border:1px dashed var(--border2);border-radius:9px;padding:10px 12px;color:var(--t2);font-size:12px;cursor:pointer;font-family:var(--f);transition:all .15s;width:100%}
+.hier-add-btn:hover{border-color:var(--accent);color:var(--accent2);background:var(--asoft)}
+
+.field-label{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 6px}
+.level-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.level-input{flex:1;padding:8px 10px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:7px;color:var(--t);font-size:12px;font-family:var(--m);outline:none}
+.level-input:focus{border-color:var(--accent)}
+.level-rm{flex-shrink:0;width:26px;height:26px;border-radius:6px;background:var(--bg3);border:0.5px solid var(--border2);color:var(--t2);cursor:pointer;font-size:12px}
+.level-rm:hover{background:var(--rsoft);color:var(--red)}
+.var-chip{display:inline-flex;padding:3px 9px;border-radius:12px;background:var(--bg4);border:0.5px solid var(--border2);color:var(--accent2);font-size:10px;font-family:var(--m);cursor:pointer;margin:0 5px 5px 0;transition:all .15s}
+.var-chip:hover{background:var(--asoft);border-color:var(--accent)}
+.check-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2);margin-bottom:8px;cursor:pointer}
+.check-row input{accent-color:var(--accent)}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TITLEBAR -->
+  <div class="tbar">
+    <div class="tbar-left">
+      <div class="tbar-logo">📁</div>
+      <div class="tbar-title">Archive AI</div>
+      <div class="tbar-badge">V2</div>
+      <div class="tbar-path" id="tbar-path"></div>
+    </div>
+    <div class="tbar-right">
+      <button class="tbbtn" onclick="openLogs()" title="Ver registro de errores">🪵 Registro</button>
+      <button class="tbbtn danger" id="btn-undo" onclick="undoOrg()" disabled title="Deshacer última organización">↺ Deshacer</button>
+      <button class="tbbtn" id="btn-new" onclick="goHome()" style="display:none">+ Nueva carpeta</button>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <!-- ══ HOME ══ -->
+    <div class="screen active" id="s-home">
+      <div class="home-wrap">
+        <div class="home-hero">
+          <div class="home-logo">📁</div>
+          <h1 class="home-title">Archive AI V2</h1>
+          <p class="home-sub">Gestor inteligente de proyectos audiovisuales. Analiza, propone y organiza con tu aprobación en cada paso.</p>
+        </div>
+
+        <div class="card">
+          <div class="clabel">Carpeta raíz del NAS o proyecto</div>
+          <div class="fsel" id="fsel">
+            <div class="fsel-icon" id="fsel-icon">🗂</div>
+            <div style="flex:1">
+              <div class="fsel-main" id="fsel-main">Arrastra una carpeta aquí</div>
+              <div class="fsel-sub" id="fsel-sub">o elige una de las opciones</div>
+              <div class="fsel-hint">
+                <button class="fsel-btn" onclick="selFolderPicker(event)">📂 Seleccionar carpeta</button>
+                <span class="fsel-hint-sep">·</span>
+                <button class="fsel-btn" onclick="selFolderPrompt(event)">⌨ Escribir ruta</button>
+              </div>
+            </div>
+          </div>
+          <div id="fstats" style="display:none">
+            <div class="fstats" style="margin-top:10px">
+              <div class="fsi"><div class="fsi-val" id="fs-files">—</div><div class="fsi-lbl">Archivos</div></div>
+              <div class="fsi"><div class="fsi-val" id="fs-dirs">—</div><div class="fsi-lbl">Carpetas</div></div>
+              <div class="fsi"><div class="fsi-val" id="fs-size">—</div><div class="fsi-lbl">Tamaño</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="clabel">Marcas configuradas</div>
+          <div class="brands-row" id="brands-row"></div>
+        </div>
+
+        <div class="card" id="orgmode-card" style="display:none">
+          <div class="clabel">Tipo de organización para esta carpeta</div>
+          <div class="orgmode-grid" id="orgmode-grid"></div>
+          <button class="hier-add-btn" style="margin-top:8px" onclick="openHierarchyModal()">+ Crear nueva jerarquía</button>
+          <div class="fsel-hint" style="margin-top:8px">
+            Elige un tipo específico si TODA esta carpeta es de un solo tipo (por ejemplo, ya seleccionaste directamente una carpeta de Producciones) — así ningún archivo se desvía a otra jerarquía por error.
+          </div>
+        </div>
+
+        <button class="cta" id="cta" onclick="startAnalysis()" disabled>
+          Selecciona una carpeta para continuar
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ ANALYSIS ══ -->
+    <div class="screen" id="s-analysis">
+      <div class="awrap">
+        <div class="atitle">Analizando proyectos</div>
+        <div class="asub" id="a-path">—</div>
+        <div class="pmeta">
+          <div class="pstatus" id="pstatus">Iniciando...</div>
+          <div class="ppct" id="ppct">0%</div>
+        </div>
+        <div class="ptrack"><div class="pbar" id="pbar"></div><div class="pshimmer"></div></div>
+        <div class="steps" id="steps">
+          <div class="step" id="st0"><div class="sdot"></div><div class="slbl">Escaneando estructura de carpetas...</div><div class="scnt" id="sc0"></div></div>
+          <div class="step" id="st1"><div class="sdot"></div><div class="slbl">Detectando marcas y fechas...</div><div class="scnt" id="sc1"></div></div>
+          <div class="step" id="st2"><div class="sdot"></div><div class="slbl">Clasificando proyectos...</div><div class="scnt" id="sc2"></div></div>
+          <div class="step" id="st3"><div class="sdot"></div><div class="slbl">Generando propuestas...</div><div class="scnt" id="sc3"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="screen" id="s-dash">
+      <div class="dash">
+        <div class="dash-hd">
+          <div class="dash-top">
+            <div class="dash-title">Propuestas de organización</div>
+            <div class="dash-acts">
+              <button class="btn btn-ghost" onclick="acceptAll()">✓ Aceptar todo</button>
+              <button class="btn btn-acc" id="btn-execute" onclick="openConfirm()">Ejecutar organización →</button>
+            </div>
+          </div>
+          <div class="summary-row">
+            <div class="sum-chip"><div class="sum-num" id="sum-folders">0</div><div class="sum-lbl">Carpetas analizadas</div></div>
+            <div class="sum-chip"><div class="sum-num g" id="sum-projects">0</div><div class="sum-lbl">Proyectos detectados</div></div>
+            <div class="sum-chip"><div class="sum-num b" id="sum-accepted">0</div><div class="sum-lbl">Aceptados</div></div>
+            <div class="sum-chip"><div class="sum-num a" id="sum-review">0</div><div class="sum-lbl">Pendientes</div></div>
+            <div class="sum-chip"><div class="sum-num r" id="sum-ignored">0</div><div class="sum-lbl">Ignorados</div></div>
+          </div>
+        </div>
+
+        <div class="dash-body">
+          <!-- LEFT: Current structure -->
+          <div class="dash-panel">
+            <div class="panel-hd">Estructura actual <span class="phd-badge phd-before">Antes</span></div>
+            <div id="tree-current"></div>
+          </div>
+          <!-- RIGHT: Proposals -->
+          <div class="dash-panel">
+            <div class="panel-hd">Estructura propuesta <span class="phd-badge phd-after">Después</span></div>
+            <div id="proposals-list"></div>
+          </div>
+        </div>
+
+        <div class="abar">
+          <div class="abar-info">
+            <span><span class="adot" style="background:var(--green)"></span><span id="info-accepted">0 aceptados</span></span>
+            <span><span class="adot" style="background:var(--amber)"></span><span id="info-review">0 pendientes</span></span>
+            <span><span class="adot" style="background:var(--red)"></span><span id="info-ignored">0 ignorados</span></span>
+          </div>
+          <div class="abar-btns">
+            <button class="btn btn-ghost" onclick="goHome()">← Volver</button>
+            <button class="btn btn-acc" onclick="openConfirm()">Ejecutar organización →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SUCCESS ══ -->
+    <div class="screen" id="s-success">
+      <div class="swrap">
+        <div class="sicon">✓</div>
+        <div class="stitle" id="s-title">¡Organización completada!</div>
+        <div class="ssub" id="s-sub">—</div>
+        <button class="undobtn" id="s-open-review" style="display:none" onclick="openReviewFolder()">📂 Abrir "_Revisar y borrar" en Finder</button>
+        <button class="undobtn" onclick="undoOrg()">↺ Deshacer toda la organización</button>
+        <button class="cta" onclick="goHome()">Nueva carpeta</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-ov" id="modal-confirm">
+  <div class="modal">
+    <div class="modal-icon">⚡</div>
+    <div class="modal-title">¿Ejecutar organización?</div>
+    <div class="modal-desc">Se moverán las carpetas aprobadas a la nueva estructura. Puedes deshacer todos los cambios.</div>
+    <div class="modal-stats" id="confirm-stats">
+      <div class="mrow"><span class="mrl">Carpetas a mover</span><span class="mrv" id="cm-folders">—</span></div>
+      <div class="mrow"><span class="mrl">Ignoradas</span><span class="mrv" id="cm-ignored">—</span></div>
+      <div class="mrow"><span class="mrl">Destino raíz</span><span class="mrv" id="cm-root" style="font-size:10px;max-width:200px;text-align:right;overflow:hidden;text-overflow:ellipsis">—</span></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn" style="flex:1" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-acc" style="flex:2" onclick="executeOrg()">Confirmar y organizar</button>
+    </div>
+  </div>
+</div>
+
+<!-- BRAND MODAL (add / edit / auto-detected) -->
+<div class="modal-ov" id="modal-brand">
+  <div class="nb-modal">
+    <div style="font-size:16px;font-weight:600;margin-bottom:6px" id="nb-title">Nueva marca</div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:4px" id="nb-detect-hint">Se encontró una carpeta con una marca desconocida:</div>
+    <div style="font-size:13px;font-weight:600;color:var(--accent2);font-family:var(--m);margin:8px 0" id="nb-suggestion"></div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:3px">Nombre</div>
+    <input class="nb-input" type="text" id="nb-input" placeholder="Nombre de la marca" style="margin:0 0 10px">
+    <div style="font-size:11px;color:var(--t3);margin-bottom:3px">Alias (separados por coma, para reconocerla en nombres de carpetas)</div>
+    <input class="nb-input" type="text" id="nb-aliases" placeholder="toyota, toyo, toy" style="margin:0 0 10px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--t3)">Color</div>
+      <input type="color" id="nb-color" value="#6c5ce7" style="width:34px;height:26px;border:none;border-radius:6px;background:none;cursor:pointer;padding:0">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-danger" id="nb-delete-btn" style="display:none" onclick="deleteBrandFromModal()">Eliminar</button>
+      <button class="btn" style="flex:1" onclick="closeBrandModal()">Cancelar</button>
+      <button class="btn btn-acc" style="flex:2" onclick="saveBrand()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIERARCHY MODAL (add / edit) -->
+<div class="modal-ov" id="modal-hierarchy">
+  <div class="modal" style="max-width:480px;width:92vw;max-height:88vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="font-size:16px;font-weight:600" id="hier-title">Nueva jerarquía</div>
+      <button class="tbbtn" onclick="closeHierarchyModal()" style="padding:3px 9px">✕</button>
+    </div>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:14px">
+      Define cómo se organizan las carpetas de este tipo de proyecto. Cada nivel es una carpeta dentro de la anterior, de raíz a hoja.
+    </div>
+
+    <div class="field-label" style="margin-top:0">Nombre</div>
+    <input class="nb-input" type="text" id="hier-name" placeholder="Ej: Campañas" style="margin:0">
+
+    <div style="display:flex;gap:10px">
+      <div style="flex:1">
+        <div class="field-label">Ícono</div>
+        <input class="nb-input" type="text" id="hier-icon" placeholder="📁" maxlength="4" style="margin:0">
+      </div>
+      <div style="flex:3">
+        <div class="field-label">Descripción</div>
+        <input class="nb-input" type="text" id="hier-desc" placeholder="Para qué sirve esta jerarquía" style="margin:0">
+      </div>
+    </div>
+
+    <div class="field-label">Palabras clave para detectarla automáticamente (opcional)</div>
+    <input class="nb-input" type="text" id="hier-keywords" placeholder="campaña, ads, publicidad" style="margin:0">
+
+    <div class="field-label">Niveles de carpetas (de raíz a hoja)</div>
+    <div id="hier-levels"></div>
+    <button class="pc-btn" onclick="addLevelRow()" style="margin-bottom:10px">+ Agregar nivel</button>
+
+    <div style="font-size:10px;color:var(--t3);margin-bottom:6px">Clic para insertar en el nivel seleccionado:</div>
+    <div style="margin-bottom:6px">
+      <span class="var-chip" onclick="insertVar('{brand}')">Marca</span>
+      <span class="var-chip" onclick="insertVar('{year}')">Año</span>
+      <span class="var-chip" onclick="insertVar('{month_name}')">Mes</span>
+      <span class="var-chip" onclick="insertVar('{day}')">Día</span>
+      <span class="var-chip" onclick="insertVar('{project_name}')">Proyecto</span>
+      <span class="var-chip" onclick="insertVar('{type}')">Tipo</span>
+    </div>
+
+    <div class="field-label">Reglas adicionales</div>
+    <label class="check-row"><input type="checkbox" id="hier-split-media" onchange="toggleSplitRaw()"> Separar por tipo de archivo (Fotos/Videos) dentro del último nivel</label>
+    <label class="check-row" id="hier-split-raw-row" style="display:none;padding-left:20px"><input type="checkbox" id="hier-split-raw"> Además, separar RAW vs Editado dentro de cada tipo</label>
+
+    <div class="modal-btns" style="margin-top:12px">
+      <button class="btn btn-danger" id="hier-delete-btn" style="display:none" onclick="deleteHierarchyFromModal()">Eliminar</button>
+      <button class="btn" style="flex:1" onclick="closeHierarchyModal()">Cancelar</button>
+      <button class="btn btn-acc" style="flex:2" onclick="saveHierarchy()">Guardar jerarquía</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PATH MODAL -->
+<div class="modal-ov" id="modal-change">
+  <div class="modal">
+    <div style="font-size:15px;font-weight:600;margin-bottom:6px">Cambiar destino</div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:12px">Escribe la ruta destino relativa a la carpeta raíz:</div>
+    <input class="nb-input" type="text" id="change-input" placeholder="Ej: Producciones - 2026 - Toyota">
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn" style="flex:1" onclick="closeChangeModal()">Cancelar</button>
+      <button class="btn btn-acc" style="flex:2" onclick="applyChange()">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGS MODAL -->
+<div class="modal-ov" id="modal-logs">
+  <div class="modal" style="max-width:640px;width:90vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:15px;font-weight:600">🪵 Registro de actividad</div>
+      <button class="tbbtn" onclick="closeLogs()" style="padding:3px 9px">✕</button>
+    </div>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:12px">
+      Muestra las últimas operaciones, advertencias y errores. Útil para diagnosticar por qué un archivo se clasificó de cierta forma.
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button class="pc-btn" id="log-filter-all" onclick="setLogFilter(null)">Todos</button>
+      <button class="pc-btn" id="log-filter-warn" onclick="setLogFilter('warn')">⚠ Advertencias</button>
+      <button class="pc-btn" id="log-filter-error" onclick="setLogFilter('error')">✕ Errores</button>
+      <button class="pc-btn" onclick="refreshLogs()" style="margin-left:auto">↻ Actualizar</button>
+    </div>
+    <div id="logs-list" style="max-height:50vh;overflow-y:auto;background:var(--bg3);border-radius:8px;padding:8px;font-family:var(--m);font-size:11px;display:flex;flex-direction:column;gap:4px"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn" style="flex:1" onclick="openLogFile()">📄 Abrir archivo en Finder</button>
+      <button class="btn btn-danger" style="flex:1" onclick="clearLogsConfirm()">🗑 Limpiar registro</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// ── Tauri bridge ──────────────────────────────────────────────────
+// The UI/state logic below is unchanged from the original browser+Node
+// version — only this bridge and startAnalysis()'s transport were touched.
+// Every other call site still does `await api('/some-endpoint', {...})`.
+const { invoke } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
+
+const CMD_MAP = {
+  '/quick-stats':    'quick_stats',
+  '/resolve-path':   'resolve_path',
+  '/execute':        'execute',
+  '/undo':           'undo',
+  '/brands':         'brands_list',
+  '/brands/add':     'brands_add',
+  '/brands/update':  'brands_update',
+  '/brands/delete':  'brands_delete',
+  '/templates':          'templates_list',
+  '/templates/add':      'templates_add',
+  '/templates/update':   'templates_update',
+  '/templates/delete':   'templates_delete',
+  '/open':           'open_path',
+  '/reveal':         'reveal_path',
+  '/ping':           'ping',
+  '/logs':           'logs_recent',
+  '/logs/open':      'logs_open',
+  '/logs/clear':     'logs_clear',
+  '/choose-folder':  'choose_folder',
+};
+
+let state = {
+  folderPath: null,
+  orgMode: null, // null = automático (detecta por subcarpeta); o el id de una jerarquía (built-in o custom)
+  reviewFolder: null,
+  proposals: [],
+  summary: null,
+  tree: null,
+  pendingBrand: null,
+  pendingChangeId: null,
+  brands: [],
+  templates: [],
+  editingBrandId: null,
+  brandModalContext: null, // 'detect' | 'manage'
+  editingHierarchyId: null,
+};
+
+// ── Utils ─────────────────────────────────────────────────────────
+const $  = id => document.getElementById(id);
+const ss = id => { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); };
+
+async function api(endpoint, data={}) {
+  const cmd = CMD_MAP[endpoint];
+  if (!cmd) throw new Error('Comando desconocido: ' + endpoint);
+  try {
+    return await invoke(cmd, data);
+  } catch (e) {
+    throw new Error(typeof e === 'string' ? e : (e?.message || String(e)));
+  }
+}
+
+function goHome() {
+  ss('s-home'); $('btn-new').style.display='none'; closeConfirm();
+  state.orgMode = null;
+  $('orgmode-card').style.display = 'none';
+  document.querySelectorAll('#orgmode-grid .orgmode-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === '');
+  });
+}
+
+function setOrgMode(e, mode) {
+  e && e.stopPropagation();
+  state.orgMode = mode || null;
+  document.querySelectorAll('#orgmode-grid .orgmode-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+}
+
+// ── Folder selection — drag & drop, native picker, manual prompt ──
+
+function initDragDrop() {
+  const zone = $('fsel');
+
+  zone.addEventListener('dragover', e => {
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.add('dragover');
+  });
+  zone.addEventListener('dragleave', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+  });
+  zone.addEventListener('drop', async e => {
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.remove('dragover');
+
+    const items = e.dataTransfer.items;
+    if (!items || !items.length) return;
+    const entry = items[0].webkitGetAsEntry ? items[0].webkitGetAsEntry() : null;
+    if (!entry || !entry.isDirectory) {
+      if (entry && entry.isFile) alert('Arrastra una carpeta, no un archivo.');
+      return;
+    }
+    const folderName = entry.name;
+    const files = Array.from(e.dataTransfer.files);
+
+    // Chrome/Arc expose File.path when served locally — try to use it first
+    let realPath = null;
+    if (files.length > 0 && files[0].path) {
+      const parts = files[0].path.split('/');
+      const idx = parts.lastIndexOf(folderName);
+      if (idx !== -1) realPath = parts.slice(0, idx + 1).join('/');
+    }
+
+    if (realPath) {
+      await loadFolder(realPath);
+    } else {
+      // The browser dropped the folder name but — as always, in every browser —
+      // withheld the real absolute path. Instead of asking the user to type it,
+      // open the same native Finder picker directly: same folder, zero typing.
+      try {
+        const result = await api('/choose-folder');
+        if (!result.canceled) await loadFolder(result.path);
+      } catch (err) {
+        alert('No se pudo abrir el selector de carpetas: ' + err.message);
+      }
+    }
+  });
+}
+
+// Method 2: Native macOS folder picker (osascript "choose folder").
+// This is the reliable path: browsers never expose real OS paths from a
+// dropped/selected folder, in any browser, for security reasons — but our
+// own local Node server can shell out to the same Finder picker macOS
+// always uses, which hands back the real absolute path with zero typing.
+async function selFolderPicker(e) {
+  e && e.stopPropagation();
+  try {
+    const result = await api('/choose-folder');
+    if (result.canceled) return;
+    await loadFolder(result.path);
+  } catch (err) {
+    alert('No se pudo abrir el selector de carpetas: ' + err.message);
+  }
+}
+
+// Method 3: Manual path prompt (keyboard icon button)
+function selFolderPrompt(e) {
+  e && e.stopPropagation();
+  const p = prompt(
+    'Escribe la ruta completa de la carpeta:\n\n' +
+    'Local: /Users/mauriciomenacalderon/Desktop/Proyectos\n' +
+    'NAS montado: /Volumes/NAS/Proyectos\n' +
+    'NAS por red (smb://): smb://servidor.local/RecursoCompartido/carpeta',
+    state.folderPath || '/Users/mauriciomenacalderon/'
+  );
+  if (p && p.trim()) loadFolder(p.trim());
+}
+
+async function loadFolder(inputPath) {
+  const isNetwork = /^smb:\/\//i.test(inputPath.trim());
+  const el = $('fsel');
+
+  try {
+    if (isNetwork) {
+      el.classList.add('has');
+      el.innerHTML = `
+        <div class="fsel-icon">📡</div>
+        <div style="flex:1">
+          <div class="fsel-main">Conectando al servidor...</div>
+          <div class="fsel-sub" style="font-family:var(--m);font-size:10px">${inputPath}</div>
+          <div class="fsel-hint">Si Finder pide credenciales, ingrésalas en la ventana que aparece. Esto puede tardar hasta 25 segundos.</div>
+        </div>`;
+    }
+
+    const stats = await api('/quick-stats', { path: inputPath });
+    const folderPath = stats.resolvedPath || inputPath;
+    state.folderPath = folderPath;
+    state.orgMode = null;
+    $('tbar-path').textContent = folderPath;
+
+    el.classList.add('has');
+    el.classList.remove('dragover');
+    el.innerHTML = `
+      <div class="fsel-icon">${isNetwork ? '📡' : '✅'}</div>
+      <div style="flex:1">
+        <div class="fsel-main" style="color:var(--accent2)">${folderPath.split('/').pop()}</div>
+        <div class="fsel-sub" style="font-family:var(--m);font-size:10px">${folderPath}</div>
+        ${isNetwork ? '<div class="fsel-hint" style="color:var(--green)">✓ Conectado al servidor de red</div>' : ''}
+        ${stats.autoCorrected ? '<div class="fsel-hint" style="color:var(--accent)">✓ Ruta corregida automáticamente</div>' : ''}
+        <div class="fsel-hint">
+          <button class="fsel-btn" onclick="selFolderPicker(event)">📂 Cambiar</button>
+          <span class="fsel-hint-sep">·</span>
+          <button class="fsel-btn" onclick="selFolderPrompt(event)">⌨ Otra ruta</button>
+        </div>
+      </div>`;
+
+    // Re-attach drag events after innerHTML replace
+    initDragDrop();
+
+    $('fs-files').textContent = stats.fileCount.toLocaleString();
+    $('fs-dirs').textContent  = stats.folderCount.toLocaleString();
+    $('fs-size').textContent  = stats.totalSize;
+    $('fstats').style.display = 'block';
+    $('orgmode-card').style.display = 'block';
+    document.querySelectorAll('#orgmode-grid .orgmode-opt').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === '');
+    });
+
+    const cta = $('cta');
+    cta.disabled = false;
+    cta.textContent = 'Analizar proyectos →';
+  } catch(e) {
+    // Reset the selector back to its empty drop-zone state so the user can retry
+    el.classList.remove('has');
+    el.innerHTML = `
+      <div class="fsel-icon" id="fsel-icon">🗂</div>
+      <div style="flex:1">
+        <div class="fsel-main" id="fsel-main">Arrastra una carpeta aquí</div>
+        <div class="fsel-sub" id="fsel-sub">o elige una de las opciones</div>
+        <div class="fsel-hint">
+          <button class="fsel-btn" onclick="selFolderPicker(event)">📂 Seleccionar carpeta</button>
+          <span class="fsel-hint-sep">·</span>
+          <button class="fsel-btn" onclick="selFolderPrompt(event)">⌨ Escribir ruta</button>
+        </div>
+      </div>`;
+    initDragDrop();
+    alert((isNetwork ? '❌ No se pudo conectar al servidor:\n\n' : '❌ Error al acceder a la carpeta:\n\n') + e.message);
+  }
+}
+
+// ── Analysis ─────────────────────────────────────────────────────
+const stepMap = {
+  'Escaneando estructura de carpetas...':0,
+  'Detectando marcas y fechas...':1,
+  'Clasificando proyectos...':2,
+  'Generando propuestas...':3,
+};
+let lastStep = -1;
+
+function updStep(data) {
+  $('pstatus').textContent = data.step;
+  $('ppct').textContent = data.pct + '%';
+  $('pbar').style.width = data.pct + '%';
+  const si = stepMap[data.step] ?? -1;
+  if (si >= 0 && si !== lastStep) {
+    if (lastStep >= 0) {
+      $('st'+lastStep).classList.replace('act','done');
+      const extra = data.folderCount ? `${data.folderCount} carpetas, ${data.fileCount} archivos` : '';
+      if (extra) $('sc'+lastStep).textContent = '✓ ' + extra;
+      else $('sc'+lastStep).textContent = '✓';
+    }
+    $('st'+si).classList.add('act');
+    lastStep = si;
+  }
+}
+
+async function startAnalysis() {
+  if (!state.folderPath) return;
+  ss('s-analysis');
+  $('a-path').textContent = state.folderPath;
+  lastStep = -1;
+  for(let i=0;i<4;i++){$('st'+i).className='step';$('sc'+i).textContent='';}
+  $('pbar').style.width='0%';
+
+  try {
+    const unlisten = await listen('analyze-progress', e => updStep(e.payload));
+    let result;
+    try {
+      result = await invoke('analyze', { path: state.folderPath, templateId: state.orgMode || null });
+    } finally {
+      unlisten();
+    }
+    state.proposals = result.proposals;
+    state.summary   = result.summary;
+    state.tree      = result.tree;
+
+    // Check for new brand suggestions
+    if (state.summary.newBrands && state.summary.newBrands.length > 0) {
+      state.pendingBrand = state.summary.newBrands[0];
+      showBrandModal(state.pendingBrand);
+    } else {
+      showDashboard();
+    }
+  } catch(e) {
+    alert('Error durante el análisis:\n' + e.message);
+    goHome();
+  }
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────
+function showDashboard() {
+  ss('s-dash');
+  $('btn-new').style.display = 'block';
+  renderSummary();
+  renderCurrentTree();
+  renderProposals();
+  updateCounters();
+}
+
+function renderSummary() {
+  const s = state.summary;
+  $('sum-folders').textContent  = s.totalFolders;
+  $('sum-projects').textContent = s.proposals;
+  $('sum-review').textContent   = s.needsReview;
+}
+
+function renderCurrentTree() {
+  const tree = state.tree;
+  if (!tree) return;
+  const typeIcons = { 'raw_photo':'📷','photo':'🖼','video':'🎬','audio':'🎵','design':'🎨','motion':'✨','document':'📄','other':'📦' };
+  let html = '<div style="font-size:10px;color:var(--t3);margin-bottom:8px">Los totales incluyen archivos dentro de subcarpetas anidadas</div>';
+  for (const child of (tree.children || []).slice(0, 40)) {
+    const s = child.stats;
+    const icons = [];
+    if (s.rawPhotos > 0 || s.photos > 0) icons.push('📷');
+    if (s.videos > 0) icons.push('🎬');
+    if (s.motion > 0) icons.push('✨');
+    if (s.audio > 0) icons.push('🎵');
+    const nested = child.childCount > 0 ? ` · 📁 ${child.childCount} subcarpeta${child.childCount===1?'':'s'}` : '';
+
+    html += `<div class="src-folder">
+      <div class="sf-icon">📂</div>
+      <div>
+        <div class="sf-name">${child.name}</div>
+        <div class="sf-meta">${s.totalFiles} archivos (total)${nested} · ${s.totalSizeFormatted||''} ${icons.join('')}</div>
+      </div>
+    </div>`;
+  }
+  if (!tree.children || tree.children.length === 0) {
+    html = '<div style="color:var(--t3);font-size:12px;padding:12px">No se encontraron subcarpetas en la raíz.</div>';
+  }
+  $('tree-current').innerHTML = html;
+}
+
+function renderProposals() {
+  const list = $('proposals-list');
+  let html = '';
+
+  for (const p of state.proposals) {
+    const confClass = p.confidence >= 80 ? 'ch' : p.confidence >= 60 ? 'cm' : 'cl';
+    const barClass  = p.confidence >= 80 ? 'cbg' : p.confidence >= 60 ? 'cba' : 'cbr';
+    const cardClass = p.needsReview ? 'needs-review' : '';
+
+    // Aggregate file-type counts across the group
+    const typeCounts = {};
+    for (const f of p.files) typeCounts[f.fileType] = (typeCounts[f.fileType]||0)+1;
+    const typeIcons = { raw_photo:'📷', photo:'🖼', video:'🎬', audio:'🎵', design:'🎨', motion:'✨', document:'📄', other:'📦' };
+    const statParts = Object.entries(typeCounts).map(([t,n]) => `${typeIcons[t]||'📄'} ${n}`);
+    statParts.push(`${p.fileCount} archivos`);
+    if (p.sourceFolderCount > 1) statParts.push(`📂 ${p.sourceFolderCount} carpetas origen`);
+
+    const destDisplay = p.destinationRoot
+      ? `<span>${p.destinationRoot}</span>` + (p.templateId !== 'recursos' ? ' / ... / (jerarquía completa)' : '')
+      : '<span style="color:var(--t3)">Sin propuesta clara</span>';
+
+    const reviewBanner = p.needsReview
+      ? `<div class="review-banner">⚠ Confianza baja — algunos archivos en este grupo no tienen marca o fecha clara</div>`
+      : '';
+
+    const acceptedClass = p.status === 'accepted' ? 'active-accept' : '';
+    const ignoredClass  = p.status === 'ignored'  ? 'active-ignore' : '';
+
+    // Source folders list (collapsed)
+    const folderNames = p.sourceFolders.map(f => f.split('/').pop()).slice(0,4).join(', ');
+    const folderExtra = p.sourceFolders.length > 4 ? ` +${p.sourceFolders.length-4} más` : '';
+
+    html += `<div class="prop-card ${cardClass}" id="pcard-${p.id}" data-id="${p.id}">
+      ${reviewBanner}
+      <div class="pc-top">
+        <div class="pc-left">
+          <div class="pc-name">${p.isResource ? '🎵' : '📂'} ${p.label}</div>
+          <div>
+            ${p.templateName ? `<span class="pc-template">⊞ ${p.templateName}${p.brand ? ' · '+p.brand.name : ''}</span>` : ''}
+          </div>
+          <div class="pc-path">→ ${destDisplay}</div>
+          <div class="pc-path" style="margin-top:3px;color:var(--t3)" title="${p.sourceFolders.join(', ')}">desde: ${folderNames}${folderExtra}</div>
+        </div>
+        <div class="conf-badge ${confClass}">${p.confidence}%</div>
+      </div>
+      <div class="pc-stats"><span>${statParts.join(' · ')}</span>${p.date ? `<span>📅 ${p.date.year}${p.date.month?'/'+String(p.date.month).padStart(2,'0'):''}${p.date.day?'/'+String(p.date.day).padStart(2,'0'):''}</span>` : ''}</div>
+      <div class="cbar-wrap"><div class="cbar ${barClass}" style="width:${p.confidence}%"></div></div>
+      <div class="pc-actions">
+        <button class="pc-btn accept ${acceptedClass}" onclick="setStatus('${p.id}','accepted')">✓ Aceptar</button>
+        <button class="pc-btn" onclick="toggleFiles('${p.id}')">👁 Ver archivos</button>
+        <button class="pc-btn change" onclick="openChange('${p.id}')">✏ Cambiar destino</button>
+        <button class="pc-btn ignore ${ignoredClass}" onclick="setStatus('${p.id}','ignored')">✕ Ignorar</button>
+      </div>
+      <div class="pc-files" id="pfiles-${p.id}" style="display:none;margin-top:9px;padding-top:9px;border-top:0.5px solid var(--border);font-size:10px;font-family:var(--m);color:var(--t3);max-height:160px;overflow-y:auto">
+        ${p.files.map(f => `<div style="padding:2px 0">${typeIcons[f.fileType]||'📄'} ${f.fileName} <span style="color:var(--t3)">— ${f.destinationPath}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  if (state.summary && state.summary.newBrands && state.summary.newBrands.length > 0) {
+    html = `<div class="review-banner" style="margin-bottom:10px">
+      💡 Carpetas con marca no reconocida: ${state.summary.newBrands.map(b => `<button class="pc-btn" style="margin-left:4px" onclick="openBrandFor('${b}')">+ '${b}'</button>`).join('')}
+    </div>` + html;
+  }
+
+  if (!state.proposals.length) {
+    html = '<div style="color:var(--t3);font-size:12px;padding:16px;text-align:center">No se encontraron archivos que organizar en esta carpeta.</div>';
+  }
+
+  list.innerHTML = html;
+}
+
+function toggleFiles(id) {
+  const el = $('pfiles-'+id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function setStatus(id, status) {
+  const p = state.proposals.find(x => x.id === id);
+  if (!p) return;
+  p.status = status;
+  // Update card class
+  const card = $('pcard-'+id);
+  if (card) {
+    card.className = `prop-card ${p.needsReview&&status==='pending'?'needs-review':''} ${status==='accepted'?'accepted':status==='changed'?'changed':status==='ignored'?'ignored':''}`;
+    // Update buttons
+    card.querySelectorAll('.pc-btn.accept').forEach(b => b.classList.toggle('active-accept', status==='accepted'));
+    card.querySelectorAll('.pc-btn.ignore').forEach(b => b.classList.toggle('active-ignore', status==='ignored'));
+  }
+  updateCounters();
+}
+
+function acceptAll() {
+  state.proposals.forEach(p => { if (p.status === 'pending') p.status = 'accepted'; });
+  renderProposals();
+  updateCounters();
+}
+
+function updateCounters() {
+  const accepted = state.proposals.filter(p => p.status==='accepted'||p.status==='changed').length;
+  const ignored  = state.proposals.filter(p => p.status==='ignored').length;
+  const pending  = state.proposals.filter(p => p.status==='pending').length;
+
+  $('sum-accepted').textContent = accepted;
+  $('sum-ignored').textContent  = ignored;
+  $('sum-review').textContent   = pending;
+  $('info-accepted').textContent = accepted + ' aceptados';
+  $('info-review').textContent   = pending + ' pendientes';
+  $('info-ignored').textContent  = ignored + ' ignorados';
+}
+
+// ── Change destination ────────────────────────────────────────────
+function openChange(id) {
+  const p = state.proposals.find(x => x.id === id);
+  state.pendingChangeId = id;
+  $('change-input').value = p?.destinationRoot || '';
+  $('modal-change').classList.add('vis');
+  setTimeout(() => $('change-input').focus(), 100);
+}
+function closeChangeModal() { $('modal-change').classList.remove('vis'); state.pendingChangeId = null; }
+function applyChange() {
+  const id   = state.pendingChangeId;
+  const val  = $('change-input').value.trim();
+  if (!id || !val) { closeChangeModal(); return; }
+  const p = state.proposals.find(x => x.id === id);
+  if (p) {
+    p.userPathOverride = val;
+    p.status    = 'changed';
+    const card  = $('pcard-'+id);
+    if (card) {
+      card.className = 'prop-card changed';
+      const pathEl = card.querySelector('.pc-path');
+      if (pathEl) pathEl.innerHTML = `→ <span>${val}</span> <span style="color:var(--blue);font-size:10px">(modificado — se aplicará a todos los archivos del grupo)</span>`;
+    }
+  }
+  closeChangeModal();
+  updateCounters();
+}
+
+// ── Brands: load, render, manage (add/edit/delete) ─────────────────
+function randomColor() { return '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0'); }
+
+async function loadBrands() {
+  try {
+    const r = await api('/brands', {});
+    state.brands = r.known || [];
+  } catch(e) { state.brands = []; }
+  renderBrands();
+}
+
+function renderBrands() {
+  const row = $('brands-row');
+  const chips = state.brands.map(b => `
+    <div class="brand-tag clickable" onclick="openEditBrand('${b.id}')" title="Clic para editar">
+      <span class="brand-dot" style="background:${b.color}"></span>${escapeHtml(b.name)}
+    </div>`).join('');
+  const empty = state.brands.length ? '' : '<div style="font-size:11px;color:var(--t3);align-self:center">Sin marcas todavía.</div>';
+  row.innerHTML = empty + chips + `<button class="brand-add-btn" onclick="openAddBrand()">+ Agregar marca</button>`;
+}
+
+// Auto-detected-during-analysis flow (existing behavior, unchanged)
+function showBrandModal(suggestion) {
+  state.editingBrandId = null;
+  state.brandModalContext = 'detect';
+  $('nb-title').textContent = 'Nueva marca detectada';
+  $('nb-detect-hint').style.display = 'block';
+  $('nb-suggestion').style.display = 'block';
+  $('nb-suggestion').textContent = suggestion;
+  $('nb-input').value = suggestion;
+  $('nb-aliases').value = '';
+  $('nb-color').value = randomColor();
+  $('nb-delete-btn').style.display = 'none';
+  $('modal-brand').classList.add('vis');
+  setTimeout(() => $('nb-input').focus(), 100);
+}
+function openBrandFor(suggestion) { showBrandModal(suggestion); }
+
+// Manual manage flow, triggered from the home screen
+function openAddBrand() {
+  state.editingBrandId = null;
+  state.brandModalContext = 'manage';
+  $('nb-title').textContent = 'Nueva marca';
+  $('nb-detect-hint').style.display = 'none';
+  $('nb-suggestion').style.display = 'none';
+  $('nb-input').value = '';
+  $('nb-aliases').value = '';
+  $('nb-color').value = randomColor();
+  $('nb-delete-btn').style.display = 'none';
+  $('modal-brand').classList.add('vis');
+  setTimeout(() => $('nb-input').focus(), 100);
+}
+function openEditBrand(id) {
+  const b = state.brands.find(x => x.id === id);
+  if (!b) return;
+  state.editingBrandId = id;
+  state.brandModalContext = 'manage';
+  $('nb-title').textContent = 'Editar marca';
+  $('nb-detect-hint').style.display = 'none';
+  $('nb-suggestion').style.display = 'none';
+  $('nb-input').value = b.name;
+  $('nb-aliases').value = (b.aliases||[]).join(', ');
+  $('nb-color').value = b.color || '#6c5ce7';
+  $('nb-delete-btn').style.display = 'inline-block';
+  $('modal-brand').classList.add('vis');
+  setTimeout(() => $('nb-input').focus(), 100);
+}
+function closeBrandModal() {
+  $('modal-brand').classList.remove('vis');
+  const ctx = state.brandModalContext;
+  state.editingBrandId = null;
+  state.brandModalContext = null;
+  if (ctx === 'detect') showDashboard();
+}
+async function saveBrand() {
+  const name = $('nb-input').value.trim();
+  if (!name) { closeBrandModal(); return; }
+  const aliases = $('nb-aliases').value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+  const color = $('nb-color').value;
+  try {
+    if (state.editingBrandId) {
+      await api('/brands/update', { id: state.editingBrandId, patch: { name, aliases, color } });
+    } else {
+      await api('/brands/add', { brand: { name, aliases, color } });
+    }
+    await loadBrands();
+  } catch(e) { alert('Error al guardar la marca:\n' + e.message); return; }
+  closeBrandModal();
+}
+async function deleteBrandFromModal() {
+  if (!state.editingBrandId) return;
+  if (!confirm('¿Eliminar esta marca? Ya no se detectará automáticamente en nuevos análisis.')) return;
+  try {
+    await api('/brands/delete', { id: state.editingBrandId });
+    await loadBrands();
+  } catch(e) { alert('Error al eliminar la marca:\n' + e.message); return; }
+  closeBrandModal();
+}
+
+// ── Hierarchies ("jerarquías"): load, render, manage (add/edit/delete) ──
+async function loadTemplates() {
+  try {
+    state.templates = await api('/templates', {});
+  } catch(e) { state.templates = []; }
+  renderOrgModes();
+}
+
+function templateIcon(t) {
+  return t.icon || ({producciones:'🎬',coberturas:'📸',animaciones:'🎨',recursos:'🗃'}[t.id]) || '📁';
+}
+
+function renderOrgModes() {
+  const grid = $('orgmode-grid');
+  let html = `<div class="orgmode-opt ${state.orgMode===null?'active':''}" data-mode="" onclick="setOrgMode(event,'')">
+    <div class="orgmode-opt-title">🔍 Automático</div>
+    <div class="orgmode-opt-sub">Detecta el tipo de cada subcarpeta por su contenido</div>
+  </div>`;
+
+  for (const t of state.templates) {
+    const icons = t.custom
+      ? `<div class="hier-opt-icons">
+           <span class="hier-opt-icon" onclick="editHierarchy(event,'${t.id}')" title="Editar">✎</span>
+           <span class="hier-opt-icon del" onclick="deleteHierarchy(event,'${t.id}')" title="Eliminar">🗑</span>
+         </div>`
+      : '';
+    html += `<div class="orgmode-opt ${state.orgMode===t.id?'active':''}" data-mode="${t.id}" onclick="setOrgMode(event,'${t.id}')">
+      ${icons}
+      <div class="orgmode-opt-title">${templateIcon(t)} ${escapeHtml(t.name)}</div>
+      <div class="orgmode-opt-sub">${escapeHtml(t.description||'')}</div>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+let lastFocusedLevelInput = null;
+function levelRowHtml(value='') {
+  return `<div class="level-row">
+    <input class="level-input" value="${escapeHtml(value)}" placeholder="{type} - {year} - {brand}" onfocus="lastFocusedLevelInput=this">
+    <button class="level-rm" onclick="removeLevelRow(this)" title="Quitar nivel">✕</button>
+  </div>`;
+}
+function addLevelRow(value='') {
+  $('hier-levels').insertAdjacentHTML('beforeend', levelRowHtml(value));
+  const inputs = $('hier-levels').querySelectorAll('.level-input');
+  lastFocusedLevelInput = inputs[inputs.length-1];
+}
+function removeLevelRow(btn) {
+  const rows = $('hier-levels').querySelectorAll('.level-row');
+  if (rows.length <= 1) return; // keep at least one level
+  btn.closest('.level-row').remove();
+}
+function insertVar(token) {
+  const input = lastFocusedLevelInput && document.body.contains(lastFocusedLevelInput)
+    ? lastFocusedLevelInput
+    : $('hier-levels').querySelector('.level-input');
+  if (!input) return;
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? input.value.length;
+  input.value = input.value.slice(0,start) + token + input.value.slice(end);
+  input.focus();
+  const pos = start + token.length;
+  input.setSelectionRange(pos, pos);
+  lastFocusedLevelInput = input;
+}
+function toggleSplitRaw() {
+  const on = $('hier-split-media').checked;
+  $('hier-split-raw-row').style.display = on ? 'flex' : 'none';
+  if (!on) $('hier-split-raw').checked = false;
+}
+
+function openHierarchyModal(editId=null) {
+  state.editingHierarchyId = editId;
+  $('hier-levels').innerHTML = '';
+  if (editId) {
+    const t = state.templates.find(x => x.id === editId);
+    if (!t) return;
+    $('hier-title').textContent = 'Editar jerarquía';
+    $('hier-name').value = t.name;
+    $('hier-icon').value = t.icon || '📁';
+    $('hier-desc').value = t.description || '';
+    $('hier-keywords').value = (t.signals?.keywords||[]).join(', ');
+    (t.levels && t.levels.length ? t.levels : ['{type} - {year} - {brand}']).forEach(l => addLevelRow(l));
+    $('hier-split-media').checked = !!t.splitByMedia;
+    $('hier-split-raw').checked = !!t.splitRawEdited;
+    $('hier-delete-btn').style.display = 'inline-block';
+  } else {
+    $('hier-title').textContent = 'Nueva jerarquía';
+    $('hier-name').value = '';
+    $('hier-icon').value = '📁';
+    $('hier-desc').value = '';
+    $('hier-keywords').value = '';
+    addLevelRow('{type} - {year} - {brand}');
+    $('hier-split-media').checked = false;
+    $('hier-split-raw').checked = false;
+    $('hier-delete-btn').style.display = 'none';
+  }
+  toggleSplitRaw();
+  $('modal-hierarchy').classList.add('vis');
+  setTimeout(() => $('hier-name').focus(), 100);
+}
+function closeHierarchyModal() {
+  $('modal-hierarchy').classList.remove('vis');
+  state.editingHierarchyId = null;
+}
+async function saveHierarchy() {
+  const name = $('hier-name').value.trim();
+  if (!name) { alert('Escribe un nombre para la jerarquía.'); return; }
+  const levels = [...$('hier-levels').querySelectorAll('.level-input')].map(i => i.value.trim()).filter(Boolean);
+  if (!levels.length) { alert('Agrega al menos un nivel de carpeta.'); return; }
+  const template = {
+    name,
+    icon: $('hier-icon').value.trim() || '📁',
+    description: $('hier-desc').value.trim(),
+    keywords: $('hier-keywords').value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean),
+    levels,
+    splitByMedia: $('hier-split-media').checked,
+    splitRawEdited: $('hier-split-raw').checked,
+  };
+  try {
+    if (state.editingHierarchyId) {
+      await api('/templates/update', { id: state.editingHierarchyId, template });
+    } else {
+      await api('/templates/add', { template });
+    }
+    await loadTemplates();
+  } catch(e) { alert('Error al guardar la jerarquía:\n' + e.message); return; }
+  closeHierarchyModal();
+}
+function editHierarchy(e, id) { e.stopPropagation(); openHierarchyModal(id); }
+async function deleteHierarchy(e, id) {
+  e.stopPropagation();
+  if (!confirm('¿Eliminar esta jerarquía? Las carpetas ya organizadas con ella no se ven afectadas.')) return;
+  try { await api('/templates/delete', { id }); await loadTemplates(); }
+  catch(err) { alert('Error al eliminar la jerarquía:\n' + err.message); }
+}
+async function deleteHierarchyFromModal() {
+  if (!state.editingHierarchyId) return;
+  if (!confirm('¿Eliminar esta jerarquía?')) return;
+  try {
+    await api('/templates/delete', { id: state.editingHierarchyId });
+    await loadTemplates();
+  } catch(e) { alert('Error al eliminar la jerarquía:\n' + e.message); return; }
+  closeHierarchyModal();
+}
+
+// ── Confirm & Execute ─────────────────────────────────────────────
+function openConfirm() {
+  const accepted = state.proposals.filter(p => p.status==='accepted'||p.status==='changed');
+  const ignored  = state.proposals.filter(p => p.status==='ignored');
+  const fileCount = accepted.reduce((sum,p) => sum + p.fileCount, 0);
+  $('cm-folders').textContent = `${fileCount} archivos (${accepted.length} grupos)`;
+  $('cm-ignored').textContent = ignored.length + ' grupos';
+  $('cm-root').textContent    = state.folderPath;
+  $('modal-confirm').classList.add('vis');
+}
+function closeConfirm() { $('modal-confirm').classList.remove('vis'); }
+
+async function executeOrg() {
+  closeConfirm();
+  ss('s-analysis');
+  $('a-path').textContent = 'Ejecutando organización...';
+  $('pbar').style.width = '60%';
+  $('pstatus').textContent = 'Moviendo archivos...';
+
+  try {
+    const r = await api('/execute', {
+      proposals: state.proposals,
+      rootPath: state.folderPath,
+      destRoot: state.folderPath,
+    });
+    $('s-title').textContent = '¡Organización completada!';
+    let sub = `${r.moved} archivos organizados.${r.errors>0?' '+r.errors+' errores.':''}`;
+    if (r.archivedFolders > 0) {
+      sub += ` ${r.archivedFolders} carpeta${r.archivedFolders===1?'':'s'} vacía${r.archivedFolders===1?'':'s'} movida${r.archivedFolders===1?'':'s'} a "_Revisar y borrar" (nada se borró).`;
+    }
+    $('s-sub').textContent = sub;
+    state.reviewFolder = r.reviewFolder || null;
+    $('s-open-review').style.display = r.reviewFolder ? 'block' : 'none';
+    $('btn-undo').disabled   = false;
+    $('btn-new').style.display = 'block';
+    ss('s-success');
+  } catch(e) {
+    alert('Error al ejecutar:\n' + e.message);
+    ss('s-dash');
+  }
+}
+
+function openReviewFolder() {
+  if (!state.reviewFolder) return;
+  api('/open', { path: state.reviewFolder }).catch(err => alert('No se pudo abrir: ' + err.message));
+}
+
+async function undoOrg() {
+  if (!confirm('¿Restaurar todos los archivos a su ubicación original?')) return;
+  const r = await api('/undo', {});
+  if (r.success) {
+    alert(`✓ Restauradas ${r.restored} carpetas/archivos.`);
+    $('btn-undo').disabled = true;
+    goHome();
+  } else {
+    alert('Error: ' + r.error);
+  }
+}
+
+// ── Logs viewer ───────────────────────────────────────────────────
+let logFilter = null;
+
+function openLogs() {
+  $('modal-logs').classList.add('vis');
+  refreshLogs();
+}
+function closeLogs() { $('modal-logs').classList.remove('vis'); }
+
+function setLogFilter(level) {
+  logFilter = level;
+  document.querySelectorAll('#modal-logs .pc-btn').forEach(b => b.classList.remove('active-accept'));
+  const id = level === 'warn' ? 'log-filter-warn' : level === 'error' ? 'log-filter-error' : 'log-filter-all';
+  const btn = $(id);
+  if (btn) btn.classList.add('active-accept');
+  refreshLogs();
+}
+
+async function refreshLogs() {
+  const list = $('logs-list');
+  list.innerHTML = '<div style="color:var(--t3);padding:8px">Cargando...</div>';
+  try {
+    const r = await api('/logs', { limit: 200, level: logFilter });
+    if (!r.entries.length) {
+      list.innerHTML = '<div style="color:var(--t3);padding:8px">Sin entradas todavía. Analiza una carpeta para generar registros.</div>';
+      return;
+    }
+    const icons = { info: 'ℹ', warn: '⚠', error: '✕' };
+    list.innerHTML = r.entries.map(e => {
+      const time = new Date(e.timestamp).toLocaleTimeString('es-ES');
+      const details = e.details ? `<div class="log-details">${escapeHtml(JSON.stringify(e.details, null, 0))}</div>` : '';
+      return `<div class="log-entry ${e.level}">
+        <span class="log-time">${time}</span><span class="log-cat">[${e.category}]</span>${icons[e.level]||''} ${escapeHtml(e.message)}
+        ${details}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = `<div style="color:var(--red);padding:8px">Error cargando el registro: ${e.message}</div>`;
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function openLogFile() {
+  try { await api('/logs/open', {}); }
+  catch(e) { alert('No se pudo abrir el archivo: ' + e.message); }
+}
+
+async function clearLogsConfirm() {
+  if (!confirm('¿Borrar todo el registro de actividad? Esta acción no se puede deshacer.')) return;
+  try {
+    await api('/logs/clear', {});
+    refreshLogs();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+(async () => {
+  initDragDrop();
+  await Promise.all([loadBrands(), loadTemplates()]);
+  try {
+    const ping = await api('/ping', {});
+    if (ping.hasUndo) $('btn-undo').disabled = false;
+  } catch(e) { /* server not ready yet */ }
+})();
+</script>
+</body>
+</html>
