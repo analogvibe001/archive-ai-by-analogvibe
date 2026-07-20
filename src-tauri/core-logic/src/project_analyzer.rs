@@ -481,7 +481,6 @@ pub struct AnalyzeSummary {
 
 struct Prelim {
     flat_index: usize,
-    chain: Vec<String>,
     brand_result: Option<crate::brand_detector::BrandMatch>,
     own_date: Option<DateInfo>,
     template_id: String,
@@ -559,7 +558,6 @@ pub fn analyze_tree(
 
         prelim.push(Prelim {
             flat_index: idx,
-            chain: chain.clone(),
             brand_result,
             own_date,
             template_id,
