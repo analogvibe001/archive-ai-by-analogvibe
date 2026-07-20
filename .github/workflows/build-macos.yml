@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -49,3 +51,21 @@ jobs:
             src-tauri/target/release/bundle/macos/*.app
             src-tauri/target/release/bundle/dmg/*.dmg
           if-no-files-found: error
+
+      # Publica el .app zipeado en la rama "release-bin" del propio repo.
+      # Esto permite descargarlo por git (sin pasar por un navegador), lo que
+      # evita que macOS le ponga la marca de cuarentena de Gatekeeper.
+      - name: Publicar app en rama release-bin
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            "src-tauri/target/release/bundle/macos/Archive AI.app" \
+            /tmp/ArchiveAI-macos.zip
+          mkdir /tmp/relbranch && cd /tmp/relbranch
+          cp /tmp/ArchiveAI-macos.zip .
+          git init -b release-bin
+          git add -A
+          git -c user.name="github-actions" -c user.email="actions@users.noreply.github.com" \
+            commit -m "Build ${GITHUB_SHA::7}"
+          git push --force \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            release-bin
